@@ -30,16 +30,14 @@ mybatis-plus:
       logic-not-delete-value: 0
     enable-sql-runner: true
 #接口文档配置
-knife4j:
-  enable: true
-  openapi:
-    title: 易图后端接口
-    version: v1.0
-    group:
-      default:
-        api-rule: package
-        api-rule-resources:
-          - com.timess.soundplulse.controller
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  packages-to-scan: com.timess.soundplulse.controller
 logging:
   level:
     com:

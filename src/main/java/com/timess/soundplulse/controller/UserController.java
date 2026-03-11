@@ -18,6 +18,8 @@ import com.timess.soundplulse.model.vo.UserVO;
 import com.timess.soundplulse.service.UserService;
 import com.timess.soundplulse.utils.CommonUtils;
 import com.timess.soundplulse.utils.EmailApi;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +34,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/user")
+@Tag(name = "用户管理接口")
 public class UserController {
     @Resource
     private UserService userService;
@@ -45,6 +48,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/register")
+    @Operation(summary = "用户注册", description = "通过账号、密码、邮箱和验证码注册新用户")
     public BaseResponse<String> userRegister(@RequestBody UserAddRequest userAddRequest){
         userService.userRegister(userAddRequest.getUserAccount(), userAddRequest.getUserPassword(),userAddRequest.getMail(), userAddRequest.getVerifyCode());
         return ResultUtils.success("注册成功");
@@ -56,6 +60,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
+    @Operation(summary = "用户登录", description = "通过账号和密码登录，返回登录用户信息")
     public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest loginRequest, HttpServletRequest request){
         LoginUserVO loginUserVO = userService.userLogin(loginRequest.getUserAccount(), loginRequest.getUserPassword(), request);
         return ResultUtils.success(loginUserVO);
@@ -67,6 +72,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/info/get")
+    @Operation(summary = "获取当前登录用户信息", description = "获取当前登录用户的详细信息")
     public BaseResponse<LoginUserVO> getLoginUserInfo(HttpServletRequest request){
         LoginUserVO loginUserVO = userService.getLoginUserVO(request);
         return ResultUtils.success(loginUserVO);
@@ -78,6 +84,7 @@ public class UserController {
      * @return
      */
    @GetMapping("/logout")
+   @Operation(summary = "退出登录", description = "注销当前用户的登录状态")
     public BaseResponse<Boolean> logout(HttpServletRequest request){
        ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
        Boolean result = userService.logout(request);
@@ -88,6 +95,7 @@ public class UserController {
      * 创建用户
      */
     @PostMapping("/add")
+    @Operation(summary = "创建用户", description = "管理员创建新用户，默认密码为12345678")
     @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest) {
         ThrowUtils.throwIf(userAddRequest == null, ErrorCode.PARAMS_ERROR);
@@ -112,6 +120,7 @@ public class UserController {
      * 根据 id 获取用户（仅管理员）
      */
     @GetMapping("/get")
+    @Operation(summary = "根据ID获取用户", description = "仅管理员可用，获取用户完整信息")
     @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResponse<User> getUserById(long id) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
@@ -124,6 +133,7 @@ public class UserController {
      * 根据 id 获取包装类
      */
     @GetMapping("/get/vo")
+    @Operation(summary = "根据ID获取用户视图", description = "获取用户的公开信息（脱敏）")
     public BaseResponse<UserVO> getUserVOById(long id) {
         BaseResponse<User> response = getUserById(id);
         User user = response.getData();
@@ -134,6 +144,7 @@ public class UserController {
      * 删除用户
      */
     @PostMapping("/delete")
+    @Operation(summary = "删除用户", description = "管理员根据ID删除用户")
     @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResponse<String> deleteUser(@RequestBody DeleteRequest deleteRequest) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
@@ -149,6 +160,7 @@ public class UserController {
      * 更新用户
      */
     @PostMapping("/update")
+    @Operation(summary = "更新用户", description = "管理员更新用户信息")
     @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest) {
         if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
@@ -166,6 +178,7 @@ public class UserController {
      * @param userQueryRequest 查询请求参数
      */
     @PostMapping("/list/page/vo")
+    @Operation(summary = "分页获取用户列表", description = "管理员分页查询用户列表，返回脱敏信息")
     @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest) {
         ThrowUtils.throwIf(userQueryRequest == null, ErrorCode.PARAMS_ERROR);
@@ -180,6 +193,7 @@ public class UserController {
     }
 
     @PostMapping("/verifyCode")
+    @Operation(summary = "发送注册验证码", description = "向指定邮箱发送注册验证码")
     public BaseResponse<Boolean> sendVerifyMail(@RequestBody UserSendRegisterMailRequest mailRequest){
         if(ObjUtil.isEmpty(mailRequest) || StringUtils.isEmpty(mailRequest.getMail())){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "传入参数错误");

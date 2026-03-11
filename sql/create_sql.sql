@@ -26,3 +26,38 @@ CREATE INDEX idx_mail ON `user`(`mail`);
 ALTER TABLE `user` ADD UNIQUE INDEX uk_user_account (`user_account`);
 -- 如果要求邮箱唯一
 ALTER TABLE `user` ADD UNIQUE INDEX uk_mail (`mail`);
+
+
+
+-- 创建歌手表
+CREATE TABLE IF NOT EXISTS `artist` (
+    `id` BIGINT NOT NULL COMMENT 'id',
+    `artist_name` VARCHAR(255) NOT NULL COMMENT '歌手名',
+    `artist_avatar` VARCHAR(1024) DEFAULT NULL COMMENT '歌手头像',
+    `artist_profile` TEXT DEFAULT NULL COMMENT '歌手简介',
+    `region` VARCHAR(50) DEFAULT NULL COMMENT '所属地区',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `is_delete` INT DEFAULT 0 COMMENT '是否删除（0-未删除，1-已删除）',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='歌手表';
+
+-- 创建歌曲表
+CREATE TABLE IF NOT EXISTS `song` (
+    `id` BIGINT NOT NULL COMMENT 'id',
+    `song_name` VARCHAR(255) NOT NULL COMMENT '歌曲名',
+    `artist_id` BIGINT NOT NULL COMMENT '歌手id',
+    `album_name` VARCHAR(255) DEFAULT NULL COMMENT '专辑名',
+    `song_url` VARCHAR(1024) NOT NULL COMMENT '歌曲链接',
+    `cover_url` VARCHAR(1024) DEFAULT NULL COMMENT '封面链接',
+    `lyrics` TEXT DEFAULT NULL COMMENT '歌词',
+    `duration` INT DEFAULT NULL COMMENT '时长（秒）',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `is_delete` INT DEFAULT 0 COMMENT '是否删除（0-未删除，1-已删除）',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='歌曲表';
+
+CREATE INDEX idx_artist_name ON `artist`(`artist_name`);
+CREATE INDEX idx_song_name ON `song`(`song_name`);
+CREATE INDEX idx_artist_id ON `song`(`artist_id`);

@@ -1,20 +1,22 @@
 package com.timess.soundplulse.model.dto.user;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
 
 /**
- * @author 33363
- * 用户注册和登录公用接口，注册时，前端需要对输入密码和确认密码进行比较，相同再发送请求
- *
+ * 用户登录请求
  */
+@Schema(description = "用户登录请求")
 @Data
 public class UserLoginRequest implements Serializable {
     private static final long serialVersionUID = -4839454500897686724L;
 
+    @Schema(description = "用户账号")
     String userAccount;
 
+    @Schema(description = "用户密码")
     String userPassword;
 
 }

@@ -1,63 +1,47 @@
 package com.timess.soundplulse.model.vo;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 获取用户信息
- * @author 33363
+ * 用户信息视图
  */
+@Schema(description = "用户信息视图")
 @Data
 public class UserVO implements Serializable {
 
-    /**
-     * id
-     */
+    @Schema(description = "用户ID")
     private Long id;
-    
-    /**
-     * 账号
-     */
+
+    @Schema(description = "用户账号")
     private String userAccount;
 
-    /**
-     * 用户邮箱
-     */
+    @Schema(description = "用户邮箱")
     private String mail;
 
-    /**
-     * 用户昵称
-     */
+    @Schema(description = "用户昵称")
     private String userName;
 
-    /**
-     * 用户头像
-     */
+    @Schema(description = "用户头像URL")
     private String userAvatar;
 
-    /**
-     * 用户简介
-     */
+    @Schema(description = "用户简介")
     private String userProfile;
 
-    /**
-     * 用户角色：
-     */
+    @Schema(description = "用户角色")
     private String userRole;
 
-    /**
-     * 创建时间
-     */
+    @Schema(description = "创建时间")
     private Date createTime;
-    /**
-     * 更新时间
-     */
+
+    @Schema(description = "更新时间")
     private Date updateTime;
-    /**
-     * 用户状态
-     */
+
+    @Schema(description = "用户状态：0-正常，1-封禁")
     private int status;
+
     private static final long serialVersionUID = 1L;
 }
