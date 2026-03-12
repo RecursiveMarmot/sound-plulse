@@ -13,11 +13,12 @@ spring:
   #限制文件大小
   servlet:
     multipart:
-      max-file-size: 10MB
+      max-file-size: 200MB
+      max-request-size: 200MB
 
 mybatis-plus:
   configuration:
-    map-underscore-to-camel-case: false
+    map-underscore-to-camel-case: true
     #打印日志
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   #设置逻辑删除字段

@@ -20,12 +20,6 @@ public class SongAddRequest implements Serializable {
     @Schema(description = "专辑名")
     private String albumName;
 
-    @Schema(description = "歌曲链接")
-    private String songUrl;
-
-    @Schema(description = "封面链接")
-    private String coverUrl;
-
     @Schema(description = "歌词")
     private String lyrics;
 

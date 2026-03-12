@@ -29,6 +29,11 @@ public class Song implements Serializable {
     private Long artistId;
 
     /**
+     * 歌手名称
+     */
+    private String artistName;
+
+    /**
      * 专辑名
      */
     private String albumName;

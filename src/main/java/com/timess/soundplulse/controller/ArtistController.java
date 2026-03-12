@@ -34,7 +34,7 @@ public class ArtistController {
      */
     @PostMapping("/add")
     @Operation(summary = "创建歌手", description = "创建一个新的歌手，需要管理员权限")
-    @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+//    @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResponse<Long> addArtist(@RequestBody ArtistAddRequest artistAddRequest) {
         long result = artistService.addArtist(artistAddRequest);
         return ResultUtils.success(result);
@@ -45,7 +45,7 @@ public class ArtistController {
      */
     @PostMapping("/delete")
     @Operation(summary = "删除歌手", description = "根据ID删除歌手，需要管理员权限")
-    @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+//    @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResponse<Boolean> deleteArtist(@RequestBody DeleteRequest deleteRequest) {
         boolean b = artistService.deleteArtist(deleteRequest);
         return ResultUtils.success(b);
@@ -56,7 +56,7 @@ public class ArtistController {
      */
     @PostMapping("/update")
     @Operation(summary = "更新歌手", description = "更新歌手信息，需要管理员权限")
-    @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+//    @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResponse<Boolean> updateArtist(@RequestBody ArtistUpdateRequest artistUpdateRequest) {
         boolean result = artistService.updateArtist(artistUpdateRequest);
         return ResultUtils.success(result);

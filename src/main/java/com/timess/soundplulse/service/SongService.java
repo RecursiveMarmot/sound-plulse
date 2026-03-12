@@ -9,12 +9,13 @@ import com.timess.soundplulse.model.dto.song.SongAddRequest;
 import com.timess.soundplulse.model.dto.song.SongQueryRequest;
 import com.timess.soundplulse.model.dto.song.SongUpdateRequest;
 import com.timess.soundplulse.model.vo.SongVO;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface SongService extends IService<Song> {
     /**
      * 创建歌曲
      */
-    long addSong(SongAddRequest songAddRequest);
+    long addSong(SongAddRequest songAddRequest, MultipartFile file);
 
     /**
      * 删除歌曲

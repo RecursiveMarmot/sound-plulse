@@ -8,17 +8,21 @@ import com.timess.soundplulse.common.DeleteRequest;
 import com.timess.soundplulse.exception.BusinessException;
 import com.timess.soundplulse.exception.ErrorCode;
 import com.timess.soundplulse.exception.ThrowUtils;
+import com.timess.soundplulse.manager.MediaManager;
 import com.timess.soundplulse.mapper.SongMapper;
 import com.timess.soundplulse.model.domain.Song;
 import com.timess.soundplulse.model.dto.song.SongAddRequest;
 import com.timess.soundplulse.model.dto.song.SongQueryRequest;
 import com.timess.soundplulse.model.dto.song.SongUpdateRequest;
+import com.timess.soundplulse.model.enums.FileTypeEnum;
 import com.timess.soundplulse.model.vo.SongVO;
 import com.timess.soundplulse.service.SongService;
 import com.timess.soundplulse.utils.SqlUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,11 +30,15 @@ import java.util.stream.Collectors;
 @Service
 public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements SongService {
 
+    @Autowired
+    MediaManager mediaManager;
     @Override
-    public long addSong(SongAddRequest songAddRequest) {
+    public long addSong(SongAddRequest songAddRequest, MultipartFile file) {
         ThrowUtils.throwIf(songAddRequest == null, ErrorCode.PARAMS_ERROR);
         Song song = new Song();
         BeanUtils.copyProperties(songAddRequest, song);
+        String filePath = mediaManager.upload(file, FileTypeEnum.AUDIO);
+        song.setSongUrl(filePath);
         boolean result = this.save(song);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return song.getId();
@@ -75,7 +83,8 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements So
         queryWrapper.eq(artistId != null, "artist_id", artistId);
         queryWrapper.like(StringUtils.isNotBlank(albumName), "album_name", albumName);
 
-        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
 
         return queryWrapper;
     }
