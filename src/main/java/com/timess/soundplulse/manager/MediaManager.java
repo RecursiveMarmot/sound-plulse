@@ -23,7 +23,7 @@ public class MediaManager {
         // 1. 获取对应的策略
         UploadStrategy strategy = factory.getStrategy(type);
         // 2. 执行上传
-        return strategy.upload(multipartFile, type);
+        return strategy.upload(multipartFile);
     }
 
     /**

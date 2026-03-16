@@ -23,8 +23,5 @@ public class SongAddRequest implements Serializable {
     @Schema(description = "歌词")
     private String lyrics;
 
-    @Schema(description = "时长（秒）")
-    private Integer duration;
-
     private static final long serialVersionUID = 1L;
 }

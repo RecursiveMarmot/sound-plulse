@@ -41,8 +41,10 @@ public class SongController {
             @Parameter(description = "歌曲信息")
             @RequestPart("songInfo") @Valid SongAddRequest songAddRequest,
             @Parameter(description = "音频文件")
-            @RequestPart("file") MultipartFile file) {
-        long result = songService.addSong(songAddRequest, file);
+            @RequestPart("file") MultipartFile file,
+            @Parameter(description = "封面")
+            @RequestPart("cover-file") MultipartFile coverFile) {
+        long result = songService.addSong(songAddRequest, file, coverFile);
         return ResultUtils.success(result);
     }
 

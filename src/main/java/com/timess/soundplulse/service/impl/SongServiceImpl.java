@@ -17,13 +17,17 @@ import com.timess.soundplulse.model.dto.song.SongUpdateRequest;
 import com.timess.soundplulse.model.enums.FileTypeEnum;
 import com.timess.soundplulse.model.vo.SongVO;
 import com.timess.soundplulse.service.SongService;
+import com.timess.soundplulse.utils.CommonUtils;
 import com.timess.soundplulse.utils.SqlUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.exception.TikaException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.xml.sax.SAXException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,13 +36,46 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements So
 
     @Autowired
     MediaManager mediaManager;
+
+    /**
+     * 添加歌曲
+     * @param songAddRequest
+     * @param file
+     * @param coverFile
+     * @return
+     */
     @Override
-    public long addSong(SongAddRequest songAddRequest, MultipartFile file) {
+    public long addSong(SongAddRequest songAddRequest, MultipartFile file, MultipartFile coverFile) {
         ThrowUtils.throwIf(songAddRequest == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(file == null, ErrorCode.PARAMS_ERROR);
         Song song = new Song();
         BeanUtils.copyProperties(songAddRequest, song);
+        //解析file信息
+        String originalFilename = file.getOriginalFilename();
+        assert originalFilename != null;
+        originalFilename = originalFilename.replace(" ", "");
+        //设置文件名称
+        if (StringUtils.isBlank(song.getSongName())) {
+            song.setSongName(originalFilename);
+        }
+        //上传封面
+        String coverPath = mediaManager.upload(coverFile, FileTypeEnum.IMAGE);
+        song.setCoverUrl(coverPath);
+        //上传音频文件
         String filePath = mediaManager.upload(file, FileTypeEnum.AUDIO);
         song.setSongUrl(filePath);
+        //计算duration
+        double audioDuration = 0;
+        try {
+            audioDuration = CommonUtils.getAudioDuration(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (TikaException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+        song.setDuration((int) Math.round(audioDuration));
         boolean result = this.save(song);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return song.getId();

@@ -28,36 +28,29 @@ public abstract class AbstractCosUpload implements UploadStrategy {
     /**
      * 上传主流程
      * @param multipartFile 文件
-     * @param path 路径前缀
      * @return
      */
     @Override
-    public final String upload(MultipartFile multipartFile, String path) {
+    public final String upload(MultipartFile multipartFile) {
         // 进行文件验证
         validate(multipartFile);
-        
-        // 生成文件名称和路径
-        String fileName = multipartFile.getOriginalFilename();
-        String suffix = FileUtil.getSuffix(fileName);
-        String finalFileName = DateUtil.format(new Date(), "yyyyMMdd") + "_" + RandomUtil.randomString(8) + "." + suffix;
-        String finalPath = String.format("%s/%s", path, finalFileName);
-        
         File tempFile = null;
         try {
             // 创建临时文件
+            String finalFileName = RandomUtil.randomNumbers(15) + DateUtil.format(new Date(), "yyyyMMddHHmmss");
             tempFile = File.createTempFile(finalFileName, null);
             multipartFile.transferTo(tempFile);
-            
             // 执行文件上传操作
-            return doUpload(cosClient, tempFile, finalPath);
+            return doUpload(cosClient, tempFile, multipartFile);
         } catch (Exception e) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件上传失败");
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件上传失败：" + e.getMessage());
         } finally {
             // 删除临时文件
             if (tempFile != null) {
                 boolean delete = tempFile.delete();
                 if (!delete) {
                     // 打印日志或者处理删除失败
+                    System.out.println("临时文件删除失败：" + tempFile.getAbsolutePath());
                 }
             }
         }
@@ -67,15 +60,9 @@ public abstract class AbstractCosUpload implements UploadStrategy {
      * 执行上传操作
      * @param client
      * @param file
-     * @param path
      * @return
      */
-    protected String doUpload(COSClient client, File file, String path) {
-        PutObjectRequest putObjectRequest = new PutObjectRequest(cosClientConfig.getBucket(), path, file);
-        client.putObject(putObjectRequest);
-        return cosClientConfig.getHost() + "/" + path;
-    }
-
+    protected abstract String doUpload(COSClient client, File file, MultipartFile multipartFile);
     /**
      * 验证文件
      * @param multipartFile

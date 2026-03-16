@@ -15,7 +15,7 @@ public interface SongService extends IService<Song> {
     /**
      * 创建歌曲
      */
-    long addSong(SongAddRequest songAddRequest, MultipartFile file);
+    long addSong(SongAddRequest songAddRequest, MultipartFile file, MultipartFile coverFile);
 
     /**
      * 删除歌曲
