@@ -91,30 +91,7 @@ public class UserController {
        return ResultUtils.success(result);
    }
 
-    /**
-     * 创建用户
-     */
-    @PostMapping("/add")
-    @Operation(summary = "创建用户", description = "管理员创建新用户，默认密码为12345678")
-    @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest) {
-        ThrowUtils.throwIf(userAddRequest == null, ErrorCode.PARAMS_ERROR);
-        //查看数据库中userAccount是否已经被使用
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserAccount, userAddRequest.getUserAccount());
-        if(userService.exists(queryWrapper)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号已被使用");
-        }
-        User user = new User();
-        BeanUtils.copyProperties(userAddRequest, user);
-        // 默认密码 12345678
-        final String DEFAULT_PASSWORD = "12345678";
-        String encryptPassword = CommonUtils.getEncryptPassword(DEFAULT_PASSWORD);
-        user.setUserPassword(encryptPassword);
-        boolean result = userService.save(user);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(user.getId());
-    }
+
 
     /**
      * 根据 id 获取用户（仅管理员）
@@ -135,43 +112,12 @@ public class UserController {
     @GetMapping("/get/vo")
     @Operation(summary = "根据ID获取用户视图", description = "获取用户的公开信息（脱敏）")
     public BaseResponse<UserVO> getUserVOById(long id) {
-        BaseResponse<User> response = getUserById(id);
-        User user = response.getData();
+        User user = userService.getById(id);
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR);
         return ResultUtils.success(userService.getUserVO(user));
     }
 
-    /**
-     * 删除用户
-     */
-    @PostMapping("/delete")
-    @Operation(summary = "删除用户", description = "管理员根据ID删除用户")
-    @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResponse<String> deleteUser(@RequestBody DeleteRequest deleteRequest) {
-        if (deleteRequest == null || deleteRequest.getId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        if(!userService.removeById(deleteRequest.getId())){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
-        }
-        return ResultUtils.success("删除成功");
-    }
 
-    /**
-     * 更新用户
-     */
-    @PostMapping("/update")
-    @Operation(summary = "更新用户", description = "管理员更新用户信息")
-    @AuthCheck(anyRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest) {
-        if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        User user = new User();
-        BeanUtils.copyProperties(userUpdateRequest, user);
-        boolean result = userService.updateById(user);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(true);
-    }
 
     /**
      * 分页获取用户封装列表（仅管理员）
@@ -195,9 +141,7 @@ public class UserController {
     @PostMapping("/verifyCode")
     @Operation(summary = "发送注册验证码", description = "向指定邮箱发送注册验证码")
     public BaseResponse<Boolean> sendVerifyMail(@RequestBody UserSendRegisterMailRequest mailRequest){
-        if(ObjUtil.isEmpty(mailRequest) || StringUtils.isEmpty(mailRequest.getMail())){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "传入参数错误");
-        }
+        ThrowUtils.throwIf(ObjUtil.isEmpty(mailRequest) || StringUtils.isEmpty(mailRequest.getMail()), ErrorCode.PARAMS_ERROR, "传入参数错误");
         boolean result = emailApi.sendGeneralEmail("易图注册验证码", mailRequest.getMail());
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "验证码发送失败");
         return ResultUtils.success(true);

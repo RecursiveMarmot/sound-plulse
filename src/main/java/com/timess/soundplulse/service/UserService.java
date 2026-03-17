@@ -54,24 +54,28 @@ public interface UserService extends IService<User> {
     Boolean logout(HttpServletRequest request);
 
     /**
-     * 用户信息脱敏
+     * 脱敏用户信息
+     * @param user
+     * @return
      */
-    public UserVO getUserVO(User user);
+    UserVO getUserVO(User user);
 
     /**
-     * 用户列表脱敏
+     * 脱敏用户信息列表
+     * @param userList
+     * @return
      */
-    public List<UserVO> getUserVOList(List<User> userList);
+    List<UserVO> getUserVOList(List<User> userList);
 
     /**
-     * 分页查询条件构造
+     * 获取查询条件
      * @param userQueryRequest
      * @return
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
     /**
-     * 是否是管理员
+     * 是否为管理员
      * @param user
      * @return
      */

@@ -68,11 +68,7 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements So
         double audioDuration = 0;
         try {
             audioDuration = CommonUtils.getAudioDuration(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (TikaException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
+        } catch (IOException | TikaException | SAXException e) {
             throw new RuntimeException(e);
         }
         song.setDuration((int) Math.round(audioDuration));
