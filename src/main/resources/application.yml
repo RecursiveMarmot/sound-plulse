@@ -9,7 +9,7 @@ spring:
   profiles:
     active: local
   application:
-    name: soundplulse-backend
+    name: soundpulse-backend
   #限制文件大小
   servlet:
     multipart:
@@ -38,7 +38,7 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
-  packages-to-scan: com.timess.soundplulse.controller
+  packages-to-scan: com.timess.soundpulse.controller
 logging:
   level:
     com:

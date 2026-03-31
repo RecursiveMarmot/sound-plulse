@@ -61,6 +61,19 @@
             <artifactId>easyexcel</artifactId>
             <version>3.1.1</version>
         </dependency>
+        <!-- 音频元数据解析（可选） -->
+        <dependency>
+            <groupId>org</groupId>
+            <artifactId>jaudiotagger</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+
+        <!-- 视频元数据解析（可选） -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.9</version>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -218,7 +231,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
-                    <mainClass>com.timess.soundpluse.SoundPulseApplication</mainClass>
+                    <mainClass>com.timess.soundpulse.SoundPulseApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
