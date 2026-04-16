@@ -33,6 +33,11 @@ public interface SongService extends IService<Song> {
     QueryWrapper<Song> getQueryWrapper(SongQueryRequest songQueryRequest);
 
     /**
+     * 根据歌曲id获取歌词
+     * @return
+     */
+    String getLyricsById(long id);
+    /**
      * 获取脱敏对象
      */
     SongVO getSongVO(Song song);

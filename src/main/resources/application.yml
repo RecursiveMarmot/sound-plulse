@@ -45,3 +45,11 @@ logging:
       timess:
         soundplulse:
           controller: debug
+
+
+ttml:
+  #ttml列表获取地址
+  list: https://amlldb.bikonoo.com/api/search-lyrics
+  #ttml歌词获取地址
+  download: https://amlldb.bikonoo.com/raw-lyrics/
+

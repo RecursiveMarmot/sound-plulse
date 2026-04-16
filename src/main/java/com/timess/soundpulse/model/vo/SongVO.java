@@ -33,17 +33,8 @@ public class SongVO implements Serializable {
     @Schema(description = "封面链接")
     private String coverUrl;
 
-    @Schema(description = "歌词")
-    private String lyrics;
-
     @Schema(description = "时长（秒）")
     private Integer duration;
-
-    @Schema(description = "创建时间")
-    private Date createTime;
-
-    @Schema(description = "更新时间")
-    private Date updateTime;
 
     private static final long serialVersionUID = 1L;
 }

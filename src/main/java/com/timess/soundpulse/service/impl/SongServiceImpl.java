@@ -12,12 +12,14 @@ import com.timess.soundpulse.exception.ThrowUtils;
 import com.timess.soundpulse.mapper.SongMapper;
 import com.timess.soundpulse.model.domain.Artist;
 import com.timess.soundpulse.model.domain.Song;
+import com.timess.soundpulse.model.dto.common.TtmlLyricsRequest;
 import com.timess.soundpulse.model.dto.song.SongAddRequest;
 import com.timess.soundpulse.model.dto.song.SongQueryRequest;
 import com.timess.soundpulse.model.dto.song.SongUpdateRequest;
 import com.timess.soundpulse.model.enums.FileTypeEnum;
 import com.timess.soundpulse.model.vo.SongVO;
 import com.timess.soundpulse.service.ArtistService;
+import com.timess.soundpulse.service.LyricsService;
 import com.timess.soundpulse.service.SongService;
 import com.timess.soundpulse.utils.CommonUtils;
 import com.timess.soundpulse.utils.SqlUtils;
@@ -47,6 +49,9 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements So
     @Autowired
     ArtistService artistService;
 
+    @Autowired
+    LyricsService lyricsService;
+
     /**
      * 添加歌曲
      * @param songAddRequest
@@ -68,7 +73,13 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements So
         if (StringUtils.isBlank(song.getSongName())) {
             song.setSongName(originalFilename);
         }
-
+        if(StringUtils.isBlank(song.getLyrics())){
+            //获取歌词
+            TtmlLyricsRequest ttmlLyricsRequest = new TtmlLyricsRequest();
+            ttmlLyricsRequest.setTrackName(song.getSongName());
+            String lyrics = lyricsService.searchLyricsTTML(ttmlLyricsRequest);
+            song.setLyrics(lyrics);
+        }
         File tempFile = null;
         File tempCoverFile = null;
         try {
@@ -155,6 +166,15 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements So
                 sortField);
 
         return queryWrapper;
+    }
+
+    @Override
+    public String getLyricsById(long id) {
+        Song song = this.getById(id);
+        if (song == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "歌曲不存在");
+        }
+        return song.getLyrics();
     }
 
     @Override

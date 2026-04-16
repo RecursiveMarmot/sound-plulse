@@ -85,6 +85,16 @@ public class SongController {
     }
 
     /**
+     * 根据 id 获取歌曲
+     */
+    @GetMapping("/get/lyrics")
+    @Operation(summary = "根据歌曲id获取歌词lrc字符串", description = "根据歌曲ID获取歌词")
+    public BaseResponse<String> getLyricsById(long id) {
+        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+        return ResultUtils.success(songService.getLyricsById(id));
+    }
+
+    /**
      * 分页获取歌曲列表
      */
     @PostMapping("/list/page/vo")
@@ -97,6 +107,10 @@ public class SongController {
         ThrowUtils.throwIf(size > 50, ErrorCode.PARAMS_ERROR);
         Page<Song> songPage = songService.page(new Page<>(current, size),
                 songService.getQueryWrapper(songQueryRequest));
+
         return ResultUtils.success(songService.getSongVOPage(songPage));
     }
+
+
+
 }
