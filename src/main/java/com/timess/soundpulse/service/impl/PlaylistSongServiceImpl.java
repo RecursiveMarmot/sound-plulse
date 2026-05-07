@@ -18,11 +18,11 @@ import com.timess.soundpulse.model.vo.SongVO;
 import com.timess.soundpulse.service.PlaylistService;
 import com.timess.soundpulse.service.PlaylistSongService;
 import com.timess.soundpulse.service.SongService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;

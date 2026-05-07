@@ -15,12 +15,12 @@ import com.timess.soundpulse.model.vo.ArtistVO;
 import com.timess.soundpulse.service.ArtistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 @Slf4j
 @RestController

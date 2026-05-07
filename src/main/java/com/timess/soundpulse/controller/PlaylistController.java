@@ -14,10 +14,10 @@ import com.timess.soundpulse.model.vo.PlaylistVO;
 import com.timess.soundpulse.service.PlaylistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/playlist")

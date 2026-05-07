@@ -6,8 +6,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.timess.soundpulse.model.dto.user.UserQueryRequest;
 import com.timess.soundpulse.model.vo.LoginUserVO;
 import com.timess.soundpulse.model.vo.UserVO;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**

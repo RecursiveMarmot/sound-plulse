@@ -1,9 +1,9 @@
 package com.timess.soundpulse.cosmanager;
 
 import com.timess.soundpulse.model.enums.FileTypeEnum;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.Map;
 
 @Component

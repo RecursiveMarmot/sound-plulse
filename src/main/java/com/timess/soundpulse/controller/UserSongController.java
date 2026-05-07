@@ -9,9 +9,9 @@ import com.timess.soundpulse.model.domain.UserSong;
 import com.timess.soundpulse.service.UserSongService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 
 @RestController
 @RequestMapping("/userSong")

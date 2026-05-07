@@ -20,13 +20,13 @@ import com.timess.soundpulse.model.vo.UserVO;
 import com.timess.soundpulse.service.UserService;
 import com.timess.soundpulse.utils.CommonUtils;
 import com.timess.soundpulse.utils.EmailApi;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
 import java.util.List;

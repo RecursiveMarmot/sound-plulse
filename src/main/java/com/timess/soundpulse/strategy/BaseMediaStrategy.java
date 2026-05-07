@@ -2,12 +2,12 @@ package com.timess.soundpulse.strategy;
 
 import com.timess.soundpulse.constant.MediaTypeEnum;
 import com.timess.soundpulse.model.dto.common.MediaInfoDTO;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URI;

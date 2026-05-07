@@ -8,9 +8,9 @@ import com.timess.soundpulse.exception.ErrorCode;
 import com.timess.soundpulse.config.CosClientConfig;
 import com.timess.soundpulse.exception.BusinessException;
 import com.timess.soundpulse.model.enums.FileTypeEnum;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.Date;
 
