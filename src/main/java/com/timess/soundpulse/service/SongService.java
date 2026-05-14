@@ -37,6 +37,12 @@ public interface SongService extends IService<Song> {
      * @return
      */
     String getLyricsById(long id);
+
+    /**
+     * 根据歌曲名或歌手模糊查询
+     */
+    Page<Song> querySong(SongQueryRequest songQueryRequest, Page<Song> songPage);
+
     /**
      * 获取脱敏对象
      */

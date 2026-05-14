@@ -177,6 +177,18 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements So
         return song.getLyrics();
     }
 
+    /**
+     * 查询歌曲列表
+     * @param songQueryRequest
+     * @param songPage
+     * @return
+     */
+    @Override
+    public Page<Song> querySong(SongQueryRequest songQueryRequest, Page<Song> songPage) {
+        QueryWrapper<Song> queryWrapper = getQueryWrapper(songQueryRequest);
+        return this.page(songPage, queryWrapper);
+    }
+
     @Override
     public SongVO getSongVO(Song song) {
         if (song == null) {

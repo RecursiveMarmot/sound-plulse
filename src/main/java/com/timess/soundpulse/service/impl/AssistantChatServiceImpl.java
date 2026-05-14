@@ -10,6 +10,8 @@ import com.timess.soundpulse.assistant.actionsenum.PlayControlAction;
 import com.timess.soundpulse.assistant.actionsenum.PlaybackControlAction;
 import com.timess.soundpulse.assistant.actionsenum.SearchAction;
 import com.timess.soundpulse.assistant.actionsenum.VolumeControlAction;
+import com.timess.soundpulse.assistant.agent.MusicAssistantAgent;
+import com.timess.soundpulse.assistant.function.MusicFunctionTools;
 import com.timess.soundpulse.assistant.model.ConversationContext;
 import com.timess.soundpulse.assistant.model.LLMResponse;
 import com.timess.soundpulse.assistant.model.MusicAction;
@@ -19,8 +21,8 @@ import com.timess.soundpulse.model.dto.assistant.AssistantChatRequest;
 import com.timess.soundpulse.service.AssistantChatService;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
-import dev.langchain4j.model.chat.response.ChatResponse;
-import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
+import dev.langchain4j.service.AiServices;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -49,7 +52,22 @@ public class AssistantChatServiceImpl implements AssistantChatService {
     @Autowired
     private StreamingChatModel streamingChatModel;
 
+    @Autowired
+    private MusicFunctionTools musicFunctionTools;
+
+    @Autowired
+    private ExecutorService actionExecutorPool;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private MusicAssistantAgent musicAssistantAgent;
+
+    @PostConstruct
+    public void initAgent() {
+        this.musicAssistantAgent = AiServices.builder(MusicAssistantAgent.class)
+            .chatModel(chatModel)
+            .tools(musicFunctionTools)
+            .build();
+    }
 
     /**
      * 简单内存会话上下文（按用户维度隔离）。
@@ -68,7 +86,7 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         context.setCurrentState(safeState);
 
         String fullPrompt = buildPrompt(safeInput, context);
-        String llmRaw = chatModel.chat(fullPrompt);
+        String llmRaw = musicAssistantAgent.chat(fullPrompt);
 
         try {
             LLMResponse response = parseResponse(llmRaw);
@@ -180,52 +198,61 @@ public class AssistantChatServiceImpl implements AssistantChatService {
 
     @Override
     public SseEmitter streamChat(AssistantChatRequest assistantChatRequest) {
-        String userMessage = assistantChatRequest.getContent();
-        log.info("收到流式聊天请求: {}", userMessage);
-
-        // 创建 SSE 发射器，超时时间设置为 5 分钟
         SseEmitter emitter = new SseEmitter(5 * 60 * 1000L);
+        actionExecutorPool.execute(() -> {
+            try {
+                safeSend(emitter, "phase", Map.of("stage", "thinking"));
+                safeSend(emitter, "text_delta", Map.of("delta", "正在处理中，请稍候..."));
 
-        // 用于缓存完整响应的 StringBuilder
-        StringBuilder fullResponse = new StringBuilder();
+                LLMResponse response = chat(assistantChatRequest);
 
-        // 调用流式 API
-        streamingChatModel.chat(userMessage, new StreamingChatResponseHandler() {
-
-            @Override
-            public void onPartialResponse(String partialResponse) {
-                // 每收到一个 token，立即发送给前端
-                try {
-                    log.debug("发送 token: {}", partialResponse);
-                    fullResponse.append(partialResponse);
-                    emitter.send(SseEmitter.event().data(partialResponse));
-                } catch (IOException e) {
-                    log.error("发送 token 失败", e);
-                    emitter.completeWithError(e);
+                safeSend(emitter, "phase", Map.of("stage", "finalizing"));
+                if (response.getResponseText() != null && !response.getResponseText().isBlank()) {
+                    streamTypingText(emitter, response.getResponseText());
                 }
-            }
-
-            @Override
-            public void onCompleteResponse(ChatResponse completeResponse) {
-                // 响应完成，发送结束标记
-                try {
-                    log.info("流式响应完成，完整内容长度: {}", fullResponse.length());
-                    emitter.send(SseEmitter.event().name("complete").data(""));
-                    emitter.complete();
-                } catch (IOException e) {
-                    log.error("发送完成标记失败", e);
-                    emitter.completeWithError(e);
+                if (response.getActions() != null) {
+                    for (MusicAction action : response.getActions()) {
+                        safeSend(emitter, "action", action);
+                    }
                 }
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                log.error("流式响应出错", error);
-                emitter.completeWithError(error);
+                safeSend(emitter, "final", response);
+                safeSend(emitter, "complete", "");
+                emitter.complete();
+            } catch (Exception e) {
+                log.error("instruction channel failed", e);
+                safeSend(emitter, "error", Map.of("message", e.getMessage()));
+                emitter.completeWithError(e);
             }
         });
-
         return emitter;
+    }
+
+    private void streamTypingText(SseEmitter emitter, String text) {
+        String content = text == null ? "" : text;
+        if (content.isBlank()) {
+            return;
+        }
+        int step = 2; // 每次推送 2 个字符，平衡流畅度和事件数量
+        for (int i = 0; i < content.length(); i += step) {
+            int end = Math.min(content.length(), i + step);
+            safeSend(emitter, "text_delta", Map.of("delta", content.substring(i, end)));
+            try {
+                Thread.sleep(30L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
+
+    private void safeSend(SseEmitter emitter, String eventName, Object payload) {
+        try {
+            synchronized (emitter) {
+                emitter.send(SseEmitter.event().name(eventName).data(payload));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -241,7 +268,8 @@ public class AssistantChatServiceImpl implements AssistantChatService {
      * 解析从大语言模型返回的原始响应字符串。
      */
     private LLMResponse parseResponse(String raw) throws IOException {
-        JsonNode root = objectMapper.readTree(raw);
+        String jsonPayload = extractJsonPayload(raw);
+        JsonNode root = objectMapper.readTree(jsonPayload);
         LLMResponse response = new LLMResponse();
 
         response.setResponseText(readText(root, "responseText", "response_text"));
@@ -270,6 +298,22 @@ public class AssistantChatServiceImpl implements AssistantChatService {
 
         response.setActions(actions);
         return response;
+    }
+
+    private String extractJsonPayload(String raw) {
+        if (raw == null) {
+            return "{}";
+        }
+        String trimmed = raw.trim();
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            return trimmed;
+        }
+        int start = trimmed.indexOf('{');
+        int end = trimmed.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            return trimmed.substring(start, end + 1);
+        }
+        return trimmed;
     }
 
     private void normalizeAndValidate(LLMResponse response) {
@@ -309,9 +353,18 @@ public class AssistantChatServiceImpl implements AssistantChatService {
             throw new IllegalArgumentException("params must be a JSON object");
         }
 
+        if ("search".equals(actionType) && "search_song".equals(actionCode)) {
+            boolean hasAny = hasAnyTextParam(params, "keyword", "artist", "album");
+            if (!hasAny) {
+                throw new IllegalArgumentException("search.search_song requires at least one of keyword/artist/album");
+            }
+        }
+
         for (ActionParamSpec spec : specs) {
             JsonNode value = params.get(spec.key());
-            if ((value == null || value.isNull()) && spec.required()) {
+            boolean skipRequiredKeywordForSearchSong =
+                "search".equals(actionType) && "search_song".equals(actionCode) && "keyword".equals(spec.key());
+            if ((value == null || value.isNull()) && spec.required() && !skipRequiredKeywordForSearchSong) {
                 throw new IllegalArgumentException("missing required param: " + spec.key());
             }
             if (value == null || value.isNull()) {
@@ -321,6 +374,16 @@ public class AssistantChatServiceImpl implements AssistantChatService {
                 throw new IllegalArgumentException("invalid param type: " + spec.key() + ", expect=" + spec.type());
             }
         }
+    }
+
+    private boolean hasAnyTextParam(JsonNode params, String... keys) {
+        for (String key : keys) {
+            JsonNode node = params.get(key);
+            if (node != null && !node.isNull() && node.isTextual() && !node.asText().isBlank()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Map<String, List<ActionParamSpec>> paramSpecMap() {
